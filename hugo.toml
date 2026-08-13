@@ -6,6 +6,9 @@ enableRobotsTXT = true
 enableEmoji = true
 defaultContentLanguage = 'zh-cn'
 
+[markup.goldmark.renderer]
+  unsafe = true
+
 [params]
   env = 'production'
   description = '记录技术与生活'
