@@ -1,6 +1,6 @@
 ---
 title: "CLI、Skill、MCP，到底有什么区别？"
-date: 2026-08-14T09:00:00+08:00
+date: 2026-08-14T00:07:00+08:00
 draft: false
 tags: ["AI", "MCP", "Agent", "CLI"]
 ---
