@@ -1,7 +1,7 @@
 ---
 title: "我的第一次全栈线上机试：90 分钟、AI 随便用、还是没做完"
 date: 2026-08-13T09:00:00+08:00
-draft: true
+draft: false
 tags: ["面试", "机试", "系统设计", "后端"]
 ---
 
@@ -112,7 +112,9 @@ POST /api/orders/batch
 
 <iframe src="/demo/order-dashboard/" style="width:100%;height:640px;border:1px solid #e5e6eb;border-radius:8px;" loading="lazy" title="订单处理与监控系统演示"></iframe>
 
-> 演示版数据为前端本地模拟，与真实系统无数据关联；完整代码在本文末尾的仓库链接里。
+> 演示版数据为前端本地模拟，与真实系统无数据关联。
+
+完整代码已开源：[GitHub 仓库：Lucas-Blog/test-exam2](https://github.com/Lucas-Blog/test-exam2)，包含源码、部署脚本（Dockerfile / docker-compose / deploy.sh）和本地故障演练脚本。
 
 ## 部署交付：从 Dockerfile 到一键脚本
 
