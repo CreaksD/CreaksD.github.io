@@ -1,6 +1,6 @@
-baseURL = 'https://CreaksD.github.io/'
+baseURL = 'https://Lucas-Blog.github.io/'
 languageCode = 'zh-cn'
-title = "Creaks 的博客"
+title = "Lucas 的博客"
 theme = 'PaperMod'
 enableRobotsTXT = true
 enableEmoji = true
@@ -9,7 +9,7 @@ defaultContentLanguage = 'zh-cn'
 [params]
   env = 'production'
   description = '记录技术与生活'
-  author = 'Creaks'
+  author = 'Lucas'
   defaultTheme = 'auto'
   ShowReadingTime = true
   ShowShareButtons = true
@@ -23,7 +23,7 @@ defaultContentLanguage = 'zh-cn'
   favicon32x32 = "favicon.svg"
 
 [params.homeInfoParams]
-  Title = '你好，我是 Creaks'
+  Title = '你好，我是 Lucas'
   Content = '欢迎来到我的博客，这里记录技术与生活。'
 
 [[menu.main]]
