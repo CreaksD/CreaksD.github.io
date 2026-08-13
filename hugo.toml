@@ -17,6 +17,11 @@ defaultContentLanguage = 'zh-cn'
   ShowBreadCrumbs = true
   ShowCodeCopyButtons = true
 
+[params.assets]
+  favicon = "favicon.svg"
+  favicon16x16 = "favicon.svg"
+  favicon32x32 = "favicon.svg"
+
 [params.homeInfoParams]
   Title = '你好，我是 Creaks'
   Content = '欢迎来到我的博客，这里记录技术与生活。'
