@@ -1,4 +1,4 @@
-baseURL = 'https://creaks.github.io/'
+baseURL = 'https://CreaksD.github.io/'
 languageCode = 'zh-cn'
 title = "Creaks 的博客"
 theme = 'PaperMod'
