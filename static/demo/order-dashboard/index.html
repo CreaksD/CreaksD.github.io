@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>订单处理与监控系统（演示）</title>
+    <link rel="icon" href="/favicon.svg">
+    <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        }
+        body {
+            background-color: #F8F9FA;
+            padding: 20px;
+        }
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+        .page-title {
+            font-size: 20px;
+            color: #1F2329;
+            font-weight: 600;
+        }
+        .header-right {
+            display: flex;
+            gap:24px;
+            align-items: center;
+        }
+        .status-dot {
+            display:flex;
+            align-items:center;
+            gap:6px;
+        }
+        .dot-green {
+            width:10px;
+            height:10px;
+            border-radius:50%;
+            background:#27AE60;
+        }
+        .dot-red {
+            width:10px;
+            height:10px;
+            border-radius:50%;
+            background:#EB5757;
+        }
+        .status-text {
+            color:#1F2329;
+        }
+        .time-text {
+            color:#6B7280;
+        }
+        .demo-badge {
+            background:#F29928;
+            color:#fff;
+            border-radius:4px;
+            padding:2px 8px;
+            font-size:12px;
+            display:none;
+        }
+        /* 卡片通用 */
+        .card {
+            background:#FFFFFF;
+            border-radius:8px;
+            padding:20px;
+        }
+        .top-section {
+            display: grid;
+            grid-template-columns: 260px 1fr;
+            gap:16px;
+            margin-bottom:16px;
+        }
+        .metric-card {
+            padding:16px;
+            border-radius:8px;
+            background:#fff;
+            margin-bottom:12px;
+            display:flex;
+            align-items:center;
+            gap:14px;
+        }
+        .icon-block-green {
+            width:54px;
+            height:54px;
+            border-radius:8px;
+            background:#22B890;
+            color:white;
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            font-size:26px;
+        }
+        .icon-block-orange {
+            width:54px;
+            height:54px;
+            border-radius:8px;
+            background:#F29928;
+            color:white;
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            font-size:26px;
+        }
+        .metric-value {
+            font-size:36px;
+            font-weight:600;
+            color:#1F2329;
+        }
+        .metric-desc {
+            color:#6B7280;
+            font-size:13px;
+        }
+        .chart-wrap {
+            height:340px;
+        }
+        .bottom-section {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap:16px;
+        }
+        .table-title {
+            font-size:16px;
+            font-weight:600;
+            color:#1F2329;
+            margin-bottom:12px;
+        }
+        table {
+            width:100%;
+            border-collapse: collapse;
+        }
+        th {
+            background:#F4F5F7;
+            color:#4E5969;
+            text-align:left;
+            padding:10px 12px;
+            font-weight:500;
+        }
+        td {
+            padding:10px 12px;
+            color:#1F2329;
+        }
+        .empty-placeholder {
+            color:#86909C;
+        }
+    </style>
+</head>
+<body>
+<div class="page-header">
+    <div class="page-title">订单处理与监控系统</div>
+    <div class="header-right">
+        <span id="demo-badge" class="demo-badge">演示模式 · 模拟数据</span>
+        <div class="status-dot">
+            <span id="status-indicator" class="dot-green"></span>
+            <span id="status-text" class="status-text">系统运行中</span>
+        </div>
+        <div id="time-text" class="time-text">--</div>
+    </div>
+</div>
+
+<div class="card">
+    <div style="margin-bottom:12px;font-size:16px;font-weight:600;color:#1F2329;">订单处理监控</div>
+    <div class="top-section">
+        <div class="left-metrics">
+            <div class="metric-card">
+                <div class="icon-block-green">📋</div>
+                <div>
+                    <div>接收订单数</div>
+                    <div id="metric-received" class="metric-value">0</div>
+                    <div class="metric-desc">最近180秒</div>
+                </div>
+            </div>
+            <div class="metric-card">
+                <div class="icon-block-orange">✓</div>
+                <div>
+                    <div>成功入库数</div>
+                    <div id="metric-stored" class="metric-value">0</div>
+                    <div class="metric-desc">最近180秒</div>
+                </div>
+            </div>
+        </div>
+        <div id="main-chart" class="chart-wrap"></div>
+    </div>
+</div>
+
+<div style="margin-top:16px;" class="card">
+    <div class="table-title">统计结果</div>
+    <div class="bottom-section">
+        <div>
+            <div class="table-title" style="font-size:15px">最新5批数据统计</div>
+            <table>
+                <thead>
+                <tr>
+                    <th>推送批次</th>
+                    <th>非重复订单数</th>
+                </tr>
+                </thead>
+                <tbody id="batch-tbody"></tbody>
+            </table>
+        </div>
+        <div>
+            <div class="table-title" style="font-size:15px">TOP5累计商品统计</div>
+            <table>
+                <thead>
+                <tr>
+                    <th>商品名</th>
+                    <th>累计金额</th>
+                </tr>
+                </thead>
+                <tbody id="product-tbody"></tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script>
+    const chartDom = document.getElementById('main-chart');
+    const myChart = echarts.init(chartDom);
+    const indicatorEl = document.getElementById('status-indicator');
+    const statusTextEl = document.getElementById('status-text');
+    const timeTextEl = document.getElementById('time-text');
+    const metricReceivedEl = document.getElementById('metric-received');
+    const metricStoredEl = document.getElementById('metric-stored');
+    const batchTbody = document.getElementById('batch-tbody');
+    const productTbody = document.getElementById('product-tbody');
+    const demoBadgeEl = document.getElementById('demo-badge');
+
+    const pad = n => String(n).padStart(2, '0');
+
+    function formatBucketTime(epochSec) {
+        const d = new Date(epochSec * 1000);
+        return pad(d.getHours()) + ':' + pad(d.getMinutes()) + ':' + pad(d.getSeconds());
+    }
+
+    function updateClock() {
+        const d = new Date();
+        timeTextEl.textContent =
+            d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate()) + ' ' +
+            pad(d.getHours()) + ':' + pad(d.getMinutes()) + ':' + pad(d.getSeconds());
+    }
+
+    function renderStatus(mysql) {
+        if (mysql === 'UP') {
+            indicatorEl.className = 'dot-green';
+            statusTextEl.textContent = '系统运行中';
+        } else {
+            indicatorEl.className = 'dot-red';
+            statusTextEl.textContent = 'MySQL 故障中';
+        }
+    }
+
+    function renderChart(buckets) {
+        const times = buckets.map(b => formatBucketTime(b.time));
+        const option = {
+            tooltip: { trigger: 'axis' },
+            legend: {
+                top: 8,
+                left: 10,
+                data: ["接收订单数", "成功入库数"]
+            },
+            grid: { left: 40, right: 20, top: 50, bottom: 40 },
+            xAxis: {
+                type: 'category',
+                data: times,
+                axisLabel: { color: '#86909C' }
+            },
+            yAxis: {
+                min: 0,
+                axisLabel: { color: '#86909C' }
+            },
+            series: [
+                {
+                    name: "接收订单数",
+                    type: "bar",
+                    color: "#22B890",
+                    data: buckets.map(b => b.received)
+                },
+                {
+                    name: "成功入库数",
+                    type: "line",
+                    color: "#F29928",
+                    symbol: 'circle',
+                    data: buckets.map(b => b.stored)
+                }
+            ]
+        };
+        myChart.setOption(option, true);
+    }
+
+    function renderTable(tbody, rows, buildCells) {
+        tbody.textContent = '';
+        (rows || []).forEach((row, i) => {
+            const tr = document.createElement('tr');
+            buildCells(tr, row);
+            tbody.appendChild(tr);
+        });
+        for (let i = (rows || []).length; i < 5; i++) {
+            const tr = document.createElement('tr');
+            for (let j = 0; j < 2; j++) {
+                const td = document.createElement('td');
+                td.className = 'empty-placeholder';
+                td.textContent = '--';
+                tr.appendChild(td);
+            }
+            tbody.appendChild(tr);
+        }
+    }
+
+    function renderBatches(batches) {
+        renderTable(batchTbody, batches, (tr, b) => {
+            const td1 = document.createElement('td');
+            td1.textContent = b.push_batch;
+            const td2 = document.createElement('td');
+            td2.textContent = b.count;
+            tr.appendChild(td1);
+            tr.appendChild(td2);
+        });
+    }
+
+    function renderProducts(products) {
+        renderTable(productTbody, products, (tr, p) => {
+            const td1 = document.createElement('td');
+            td1.textContent = p.name;
+            const td2 = document.createElement('td');
+            td2.textContent = p.amount;
+            tr.appendChild(td1);
+            tr.appendChild(td2);
+        });
+    }
+
+    function render(data) {
+        const buckets = Array.isArray(data.buckets) ? data.buckets : [];
+        const received = buckets.reduce((s, b) => s + (Number(b.received) || 0), 0);
+        const stored = buckets.reduce((s, b) => s + (Number(b.stored) || 0), 0);
+
+        renderStatus(data.mysql);
+        metricReceivedEl.textContent = received;
+        metricStoredEl.textContent = stored;
+        renderChart(buckets);
+        renderBatches(Array.isArray(data.batches) ? data.batches : []);
+        renderProducts(Array.isArray(data.top_products) ? data.top_products : []);
+    }
+
+    async function loadStats() {
+        try {
+            const res = await fetch('/api/stats');
+            if (!res.ok) throw new Error('HTTP ' + res.status);
+            const data = await res.json();
+            render(data);
+        } catch (e) {
+            // 无后端（如静态站点演示时）：使用本地模拟数据
+            demoBadgeEl.style.display = 'inline-block';
+            render(genMockStats());
+        }
+    }
+
+    // ===== 演示模式：模拟考试场景的订单流与 MySQL 故障注入 =====
+    // 每 5 秒推进一个统计桶；每 15 桶（约 75 秒）模拟一次 MySQL 故障
+    // （故障期间接收订单数继续增长、成功入库数暂停，恢复后追赶补齐）
+    const PRODUCTS = [
+        { id: 10001, name: "智能手表", price: 1999 },
+        { id: 10002, name: "无线耳机", price: 899 },
+        { id: 10003, name: "机械键盘", price: 649 },
+        { id: 10004, name: "显示器", price: 1599 },
+        { id: 10005, name: "蓝牙音箱", price: 499 },
+        { id: 10006, name: "路由器", price: 329 }
+    ];
+
+    const mock = {
+        tick: 0,
+        buckets: [],
+        batchNo: 0,
+        batches: [],
+        topProducts: new Map(),   // name -> 累计金额
+        pendingBacklog: 0
+    };
+
+    function genMockStats() {
+        mock.tick++;
+        const now = Math.floor(Date.now() / 1000);
+        const bucketStart = Math.floor(now / 5) * 5;
+
+        // 每 15 桶（约 75 秒）模拟一次 MySQL 故障，持续 3 桶（15 秒）
+        const wasDown = mock.mysqlDown;
+        mock.mysqlDown = (mock.tick % 15) >= 12;
+        const mysql = mock.mysqlDown ? 'DOWN' : 'UP';
+
+        const received = 3 + Math.floor(Math.random() * 8);
+        let stored;
+        if (mock.mysqlDown) {
+            stored = 0;
+            mock.pendingBacklog += received;
+        } else if (wasDown) {
+            // 恢复后的第一桶：积压订单追赶补齐
+            stored = received + mock.pendingBacklog;
+            mock.pendingBacklog = 0;
+        } else {
+            stored = received;
+        }
+
+        mock.buckets.push({ time: bucketStart, received, stored });
+        if (mock.buckets.length > 36) mock.buckets.shift();
+
+        // 每 3 桶生成一个推送批次（部分订单重复被过滤）
+        mock.batchNo++;
+        if (mock.batchNo % 3 === 0) {
+            const pushBatch = 'PUSH-' + String(mock.batchNo).padStart(3, '0');
+            mock.batches.unshift({ push_batch: pushBatch, count: 12 + Math.floor(Math.random() * 40) });
+            if (mock.batches.length > 5) mock.batches.pop();
+        }
+
+        // 累计商品金额
+        const p = PRODUCTS[Math.floor(Math.random() * PRODUCTS.length)];
+        const qty = 1 + Math.floor(Math.random() * 3);
+        const amount = (p.price * qty).toFixed(2);
+        mock.topProducts.set(p.name, Number((mock.topProducts.get(p.name) || 0) + p.price * qty).toFixed(2));
+        const topProducts = [...mock.topProducts.entries()]
+            .map(([name, amount]) => ({ name, amount }))
+            .sort((a, b) => Number(b.amount) - Number(a.amount))
+            .slice(0, 5);
+
+        return { mysql, buckets: mock.buckets, batches: mock.batches, top_products: topProducts };
+    }
+
+    // 首次进入立即加载，之后每 5 秒轮询（数据无变化也刷新）
+    loadStats();
+    setInterval(loadStats, 5000);
+
+    // 头部时间每秒更新
+    updateClock();
+    setInterval(updateClock, 1000);
+
+    window.addEventListener('resize', () => myChart.resize());
+</script>
+</body>
+</html>
